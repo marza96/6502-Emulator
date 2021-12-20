@@ -5,8 +5,9 @@ var {Instructions} = require("/home/node/SNESEmulator/CPUEmulator/instructions.j
 
 class InstructionDecoder{
     constructor(){
-        this.cycles = null
-        this.curr_cycle = null
+        this.bytes = null;
+        this.cycles = null;
+        this.curr_cycle = null;
 
         var instrs = Object.getOwnPropertyNames(Instructions);
         for (var key in instrs) {
@@ -79,23 +80,26 @@ class InstructionDecoder{
     }
 
     resolveInstr(cpuInstance, opcode, address){
-        var instr_name, mem_access, cycles;
-        [instr_name, mem_access, cycles] = OpcodeMap[opcode];
+        var instr_name, mem_access, bytes, cycles;
+        [instr_name, mem_access, bytes, cycles] = OpcodeMap[opcode];
         if (this.cycles == null){
+            this.bytes = bytes
             this.cycles = cycles;
             this.curr_cycle = 0;
         }
         
         if (this.curr_cycle < this.cycles - 1){
             this.curr_cycle++;
-            return false;
+            return 0x00;
         }
 
+        var ret_bytes = this.bytes;
         this.curr_cycle = null;
         this.cycles = null;
+        this.bytes = null;
         this[instr_name](
             cpuInstance, address, mem_access);
-        return true
+        return ret_bytes
     }
 }
 

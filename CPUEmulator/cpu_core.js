@@ -1,7 +1,9 @@
 #!/root/.nvm/versions/node/v8.0.0/bin/node
 
 var {InstructionDecoder} = require("/home/node/SNESEmulator/CPUEmulator/instruction_decoder.js");
-var {MemConstants, OpcodeMap, IntConstants} = require("/home/node/SNESEmulator/CPUEmulator/cpu_constatns.js");
+var {MemConstants, OpcodeMap, IntConstants, MemMapConstants} = require("/home/node/SNESEmulator/CPUEmulator/cpu_constatns.js");
+var {RAM} = require("/home/node/SNESEmulator/RAMEmulator/ram.js");
+
 
 class CpuCore{
     constructor(RAMInstance){
@@ -85,8 +87,12 @@ class CpuCore{
         return byte;
     }
 
+    isAllowed(intType){
+        // TODO CHECK IF CERTAIN INTS ON
+    }
+
     interrupt(intType){
-        if (!isAllowed(intType))
+        if (!this.isAllowed(intType))
             return;
 
         this.interrupt = intType;
@@ -97,19 +103,19 @@ class CpuCore{
         this.pushStack(this.regSP & 0xF0);
         this.pushStack(this.regSP & 0x0F);
         this.pushStack(this.regSR);
-        this.regSR &= 0xFF - 0x04;
+        this.regSR &= 0xFB;
         // TODO FETCH INTERRUPT VECTOR
     }
 
     tick(){ 
-        var done = null;
-        done = this.instrDecoder.resolveInstr(
+        var bytes = null;
+        bytes = this.instrDecoder.resolveInstr(
             this, this.opcode, this.address);
 
-        if (done == false)
+        if (bytes == 0x00)
             return;
         
-        this.regPC++;
+        this.regPC += bytes;
         var vals = this.RAMInstance.fetchInstr(this.regPC);
         this.opcode = vals[0];
         this.address = vals[1];
@@ -122,45 +128,9 @@ class CpuCore{
 }
 
 
-class DummyRam{
-    constructor(data, opcode, addr){
-        this.data = data;
-        this.opcode = opcode;
-        this.addr = addr;
-    }
-
-    setData(address, data){
-
-    }
-
-    getData(address){
-        console.log("ADDR", address);
-        return this.data[address];
-    }
-
-    fetchInstr(PC){
-        return [this.opcode[PC], this.addr[PC]];
-    }
-}
-
-
-ram_instance = new DummyRam(
-    {
-        0x22 : 0xAB,
-        0x25 : 0xBB,
-        0x26 : 0xCC,
-        0x32 : 0x36,
-        0x23 : 0x25,
-        0x2C : 0x23,
-        0x301 : 0x3C,
-        0x305 : 0xA1,
-        0x306 : 0xF1
-    }, 
-    ["_x29", "_x25", "_x35", "_x2D", "_x3D", "_x39", "_x21"], 
-    [0x03, 0x22, 0x22, 0x301, 0x301, 0x301, 0x0027]
-    );
-
-core = new CpuCore(ram_instance);
+programData = {};
+RAMInstance = new RAM(programData);
+core = new CpuCore(RAMInstance);
 
 //IMM
 core.regA = 0xF1;
