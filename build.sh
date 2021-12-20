@@ -1,0 +1,1 @@
+docker build -t marza1996/snes_node .
