@@ -24,6 +24,7 @@ class CpuCore{
         
         this.zp = false;
         this.immMem = null;
+        this.interrupt = null;
         this.opcode = null;
         this.address = null;
         this.initCore();
@@ -85,7 +86,19 @@ class CpuCore{
     }
 
     interrupt(intType){
-        return 0;
+        if (!isAllowed(intType))
+            return;
+
+        this.interrupt = intType;
+    }
+
+    interruptPrep(){
+        this.saveState();
+        this.pushStack(this.regSP & 0xF0);
+        this.pushStack(this.regSP & 0x0F);
+        this.pushStack(this.regSR);
+        this.regSR &= 0xFF - 0x04;
+        // TODO FETCH INTERRUPT VECTOR
     }
 
     tick(){ 
@@ -100,6 +113,11 @@ class CpuCore{
         var vals = this.RAMInstance.fetchInstr(this.regPC);
         this.opcode = vals[0];
         this.address = vals[1];
+
+        if (this.interrupt == null)
+            return;
+        
+        this.interruptPrep();
     }
 }
 
