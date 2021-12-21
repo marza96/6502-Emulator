@@ -5,9 +5,12 @@ var {Instructions} = require("/home/node/SNESEmulator/CPUEmulator/instructions.j
 
 class InstructionDecoder{
     constructor(){
-        this.bytes = null;
-        this.cycles = null;
-        this.curr_cycle = null;
+        this.instrName = null;
+        this.memAccess = null;
+        this.bytes     = null;
+        this.cycles    = null;
+        this.curCycle  = null;
+        this.PREP      = "_x";
 
         var instrs = Object.getOwnPropertyNames(Instructions);
         for (var key in instrs) {
@@ -79,13 +82,37 @@ class InstructionDecoder{
         };
     }
 
-    resolveInstr(cpuInstance, opcode, address){
-        var instr_name, mem_access, bytes, cycles;
-        [instr_name, mem_access, bytes, cycles] = OpcodeMap[opcode];
+    fetchAddr(cpuInstance, num_bytes){
+        var addr  = 0x00;
+        var mult  = 1;
+        var regPC = cpuInstance.regPC;
+        
+        for (var i = 0x01; i < num_bytes; i++){
+            var byte = cpuInstance.RAMInstance.getData(regPC + i);
+            addr += mult * byte;
+            mult *= 256;
+        }
+
+        return addr;
+    }
+
+    resolveInstr(cpuInstance){
         if (this.cycles == null){
-            this.bytes = bytes
-            this.cycles = cycles;
-            this.curr_cycle = 0;
+            var opCode  = null;
+            var regPC   = null;
+            var retVals = null;
+
+            regPC   = cpuInstance.regPC;
+            opCode  = cpuInstance.RAMInstance.getData(regPC);
+            opCode  = this.PREP + opCode.toString(16);
+            opCode  = opCode.toUpperCase();
+            retVals = OpcodeMap[opCode];
+
+            this.instrName = retVals[0];
+            this.memAccess = retVals[1];
+            this.bytes     = retVals[2]
+            this.cycles    = retVals[3];  
+            this.currCycle = 0;
         }
         
         if (this.curr_cycle < this.cycles - 1){
@@ -93,12 +120,17 @@ class InstructionDecoder{
             return 0x00;
         }
 
-        var ret_bytes = this.bytes;
+        var addr = this.fetchAddr(cpuInstance, this.bytes);
+        this[this.instrName](cpuInstance, 
+            addr, this.memAccess);
+
+        var ret_bytes   = this.bytes;
+        this.instrName  = null;
+        this.memAccess  = null;
+        this.bytes      = null;
+        this.cycles     = null;
         this.curr_cycle = null;
-        this.cycles = null;
-        this.bytes = null;
-        this[instr_name](
-            cpuInstance, address, mem_access);
+
         return ret_bytes
     }
 }

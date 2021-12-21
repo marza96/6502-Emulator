@@ -7,6 +7,7 @@ class RAM{
     constructor(programData){
         this.memory = {};
         this.initializeRAM();
+        this.populateROM(programData);
     }
 
     initializeRAM(){
@@ -16,9 +17,10 @@ class RAM{
 
     populateROM(programData){
         var romLimits = MemMapConstants._ROM;
-        var romOffset = romLimits[0] + 1;
+        var romOffset = romLimits[0];
         for (var key in programData) {
-            this.memory[romOffset] = programData[key];
+            var addr = (romOffset + parseInt(key));
+            this.memory[romOffset + parseInt(key)] = programData[key];
             console.assert(romOffset <= romLimits[1])
         }
     }
@@ -34,4 +36,4 @@ class RAM{
 }
 
 
-ram = new RAM({})
+exports.RAM = RAM;

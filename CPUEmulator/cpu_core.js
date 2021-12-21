@@ -7,44 +7,35 @@ var {RAM} = require("/home/node/SNESEmulator/RAMEmulator/ram.js");
 
 class CpuCore{
     constructor(RAMInstance){
-        this.regX = 0x00;
-        this.regY = 0x00;
-        this.regA = 0x00;
-        this.regPC = 0x00;
+        this.regX  = 0x00;
+        this.regY  = 0x00;
+        this.regA  = 0x00;
+        this.regPC = MemMapConstants._ROM[0];
         this.regSR = 0x00;
         this.regSP = 0x01FF;
 
-        this.temp_regX = 0x00;
-        this.temp_regY = 0x00;
-        this.temp_regA = 0x00;
-        this.temp_regPC = 0x00;
-        this.temp_regSR = 0x00;
-        this.temp_regSP = 0x01FF;
+        this.temp_regX  = null;
+        this.temp_regY  = null;
+        this.temp_regA  = null;
+        this.temp_regSR = null;
+        this.temp_regPC = null;
+        this.temp_regSP = null;
 
         this.instrDecoder = new InstructionDecoder();
-        this.RAMInstance = RAMInstance;
+        this.RAMInstance  = RAMInstance;
         
-        this.zp = false;
-        this.immMem = null;
+        this.zp        = false;
+        this.immMem    = null;
         this.interrupt = null;
-        this.opcode = null;
-        this.address = null;
-        this.initCore();
     }
 
     get carry(){
         return this.regSR << 7;
     }
 
-    initCore(){
-        var vals = this.RAMInstance.fetchInstr(this.regPC);
-        this.opcode = vals[0];
-        this.address = vals[1];
-    }
-
     getData(address){
         if (this.immMem != null){
-            var data = this.immMem;
+            var data    = this.immMem;
             this.immMem = null;
             return data;
         }
@@ -108,18 +99,13 @@ class CpuCore{
     }
 
     tick(){ 
-        var bytes = null;
-        bytes = this.instrDecoder.resolveInstr(
-            this, this.opcode, this.address);
+        var bytes_step = null;
+        bytes_step = this.instrDecoder.resolveInstr(this);
 
-        if (bytes == 0x00)
+        if (bytes_step == 0x00)
             return;
         
-        this.regPC += bytes;
-        var vals = this.RAMInstance.fetchInstr(this.regPC);
-        this.opcode = vals[0];
-        this.address = vals[1];
-
+        this.regPC += bytes_step;
         if (this.interrupt == null)
             return;
         
@@ -127,8 +113,7 @@ class CpuCore{
     }
 }
 
-
-programData = {};
+programData = [0xa9, 0xc0, 0xaa, 0xe8, 0x69, 0xc4, 0x00];
 RAMInstance = new RAM(programData);
 core = new CpuCore(RAMInstance);
 
@@ -188,5 +173,9 @@ core.tick();
 core.tick();
 core.tick();
 core.tick();
-core.tick();
+core
+.tick();
 console.log("OUT", "is: ", core.regA, "should: ", 0xC6 & 0x25);
+
+
+
