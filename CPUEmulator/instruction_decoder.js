@@ -82,12 +82,12 @@ class InstructionDecoder{
         };
     }
 
-    fetchAddr(cpuInstance, num_bytes){
+    fetchAddr(cpuInstance){
         var addr  = 0x00;
         var mult  = 1;
         var regPC = cpuInstance.regPC;
         
-        for (var i = 0x01; i < num_bytes; i++){
+        for (var i = 0x01; i < 3; i++){
             var byte = cpuInstance.RAMInstance.getData(regPC + i);
             addr += mult * byte;
             mult *= 256;
@@ -120,7 +120,7 @@ class InstructionDecoder{
             return 0x00;
         }
 
-        var addr = this.fetchAddr(cpuInstance, this.bytes);
+        var addr = this.fetchAddr(cpuInstance);
         this[this.instrName](cpuInstance, 
             addr, this.memAccess);
 
