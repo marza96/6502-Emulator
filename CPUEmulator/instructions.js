@@ -17,6 +17,7 @@ class Instructions{
     }
     
     static _AND(cpuInstance, address){
+        console.log("AND", address)
         var operand = cpuInstance.getData(address);
         cpuInstance.regA = operand & cpuInstance.regA;
     }
@@ -43,7 +44,37 @@ class Instructions{
     }
 
     static _BEQ(cpuInstance, address){
+        if (!(cpuInstance.regSR & 0x02))
+            return;
+
+        offset = Helpers.relBranchOffset(address);
+        cpuInstance.regPC += offset;
+    }
+
+    static _BIT(cpuInstance, address){
+        var operand = cpuInstance.getData(address);
+        cpuInstance.regSR &= 0x3F;
+        cpuInstance.regSR |= 0xC0 & operand;
+    }
+
+    static _BMI(cpuInstance, address){
+        if (!(cpuInstance.regSR & 0x80))
+            return;
+
+        offset = Helpers.relBranchOffset(address);
+        cpuInstance.regPC += offset;
+    }
+
+    static _BNE(cpuInstance, address){
         if (cpuInstance.regSR & 0x02)
+            return;
+
+        offset = Helpers.relBranchOffset(address);
+        cpuInstance.regPC += offset;
+    }
+
+    static _BPL(cpuInstance, address){
+        if (cpuInstance.regSR & 0x80)
             return;
 
         offset = Helpers.relBranchOffset(address);

@@ -111,7 +111,16 @@ class CpuCore{
 }
 
 
-programData = [0x29, 0xA5, 0x25, 0x01, 0x35, 0x01, 0x03];
+programData = [
+    0x29, 0xA5, 
+    0x25, 0x01, 
+    0x35, 0x03, 
+    0x2D, 0x11, 0x33, 
+    0x3D, 0x12, 0x33, 
+    0x39, 0x12, 0x33,
+    0x21, 0x02,
+    0x31, 0x07
+];
 RAMInstance = new RAM(programData);
 core = new CpuCore(RAMInstance);
 
@@ -130,7 +139,7 @@ core.tick();
 console.log("OUT", "is: ", core.regA, "should: ", 0xAF & 0xAB);
 
 //ZPX
-RAMInstance.setData(0x04, 0xBB)
+RAMInstance.setData(0x06, 0xBB)
 core.regX = 3;
 core.regA = 0x2F;
 core.tick();
@@ -139,43 +148,61 @@ core.tick();
 core.tick();
 console.log("OUT", "is: ", core.regA, "should: ", 0x2F & 0xBB);
 
-// //ABS
-// core.regA = 0x2F;
-// core.tick();
-// core.tick();
-// core.tick();
-// core.tick();
-// console.log("OUT", "is: ", core.regA, "should: ", 0x2F & 0x3C);
+//ABS
+RAMInstance.setData(0x3311, 0x3C)
+core.regA = 0x2F;
+core.tick();
+core.tick();
+core.tick();
+core.tick();
+console.log("OUT", "is: ", core.regA, "should: ", 0x2F & 0x3C);
 
-// //ABS_X
-// core.regX = 4;
-// core.regA = 0x2C;
-// core.tick();
-// core.tick();
-// core.tick();
-// core.tick();
-// console.log("OUT", "is: ", core.regA, "should: ", 0x2C & 0xA1);
+//ABS_X
+RAMInstance.setData(0x3316, 0xA1)
+core.regX = 4;
+core.regA = 0x2C;
+core.tick();
+core.tick();
+core.tick();
+core.tick();
+console.log("OUT", "is: ", core.regA, "should: ", 0x2C & 0xA1);
 
-// //ABS_Y
-// core.regY = 5;
-// core.regA = 0x32;
-// core.tick();
-// core.tick();
-// core.tick();
-// core.tick();
-// console.log("OUT", "is: ", core.regA, "should: ", 0x32 & 0xF1);
+//ABS_Y
+RAMInstance.setData(0x3317, 0xF1)
+core.regY = 5;
+core.regA = 0x32;
+core.tick();
+core.tick();
+core.tick();
+core.tick();
+console.log("OUT", "is: ", core.regA, "should: ", 0x32 & 0xF1);
 
-// //X_IND
-// core.regX = 5;
-// core.regA = 0xC6;
-// core.tick();
-// core.tick();
-// core.tick();
-// core.tick();
-// core.tick();
-// core
-// .tick();
-// console.log("OUT", "is: ", core.regA, "should: ", 0xC6 & 0x25);
+//X_IND
+RAMInstance.setData(0x7, 0x8)
+RAMInstance.setData(0x8, 0x25)
+core.regX = 5;
+core.regA = 0xC6;
+core.tick();
+core.tick();
+core.tick();
+core.tick();
+core.tick();
+core.tick();
+console.log("OUT", "is: ", core.regA, "should: ", 0xC6 & 0x25);
+
+//IND_Y
+RAMInstance.setData(0x7, 0x8)
+RAMInstance.setData(0x9, 0x31)
+core.regY = 1;
+core.regA = 0x11;
+core.tick();
+core.tick();
+core.tick();
+core.tick();
+core.tick();
+console.log("OUT", "is: ", core.regA, "should: ", 0x11 & 0x31);
+
+
 
 
 
