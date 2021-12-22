@@ -11,7 +11,7 @@ class RAM{
     }
 
     initializeRAM(){
-        for (var i = 0x00; i <= 0xFF; i++)
+        for (var i = 0x00; i <= 0xFFFF; i++)
             this.memory[i] = 0x00;
     }
 
@@ -19,9 +19,9 @@ class RAM{
         var romLimits = MemMapConstants._ROM;
         var romOffset = romLimits[0];
         for (var key in programData) {
-            var addr = (romOffset + parseInt(key));
-            this.memory[romOffset + parseInt(key)] = programData[key];
-            console.assert(romOffset <= romLimits[1])
+            var addr = romOffset + parseInt(key);
+            this.memory[addr] = programData[key];
+            console.assert(addr <= romLimits[1])
         }
     }
 
@@ -30,7 +30,6 @@ class RAM{
     }
 
     setData(addr, byte){
-        console.assert(romOffset < romLimits[0]);
         this.memory[addr] = byte;
     }
 }

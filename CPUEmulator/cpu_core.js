@@ -1,7 +1,7 @@
 #!/root/.nvm/versions/node/v8.0.0/bin/node
 
 var {InstructionDecoder} = require("/home/node/SNESEmulator/CPUEmulator/instruction_decoder.js");
-var {MemConstants, OpcodeMap, IntConstants, MemMapConstants} = require("/home/node/SNESEmulator/CPUEmulator/cpu_constatns.js");
+var {MemMapConstants} = require("/home/node/SNESEmulator/CPUEmulator/cpu_constatns.js");
 var {RAM} = require("/home/node/SNESEmulator/RAMEmulator/ram.js");
 
 
@@ -29,10 +29,6 @@ class CpuCore{
         this.interrupt = null;
     }
 
-    get carry(){
-        return this.regSR << 7;
-    }
-
     getData(address){
         if (this.immMem != null){
             var data    = this.immMem;
@@ -41,7 +37,8 @@ class CpuCore{
         }
         
         if (this.zp == false)
-            console.assert((address >= 0x300) && (address < 0xE000));
+            console.assert(
+                (address >= MemMapConstants._FREE[0]) && (address < MemMapConstants._FREE[1]));
         
         this.zp = false
         return this.RAMInstance.getData(address);
@@ -113,7 +110,8 @@ class CpuCore{
     }
 }
 
-programData = [0xa9, 0xc0, 0xaa, 0xe8, 0x69, 0xc4, 0x00];
+
+programData = [0x29, 0xA5, 0x25, 0x01, 0x35, 0x01, 0x03];
 RAMInstance = new RAM(programData);
 core = new CpuCore(RAMInstance);
 
@@ -121,9 +119,10 @@ core = new CpuCore(RAMInstance);
 core.regA = 0xF1;
 core.tick();
 core.tick();
-console.log("OUT", "is: ", core.regA, "should: ", 0xF1 & 0x03);
+console.log("OUT", "is: ", core.regA, "should: ", 0xF1 & 0xA5);
 
-//ZP
+// ZP
+RAMInstance.setData(0x01, 0xAB)
 core.regA = 0xAF;
 core.tick();
 core.tick();
@@ -131,51 +130,52 @@ core.tick();
 console.log("OUT", "is: ", core.regA, "should: ", 0xAF & 0xAB);
 
 //ZPX
+RAMInstance.setData(0x04, 0xBB)
 core.regX = 3;
-core.regA = 0xEF;
-core.tick();
-core.tick();
-core.tick();
-core.tick();
-console.log("OUT", "is: ", core.regA, "should: ", 0xEF & 0xBB);
-
-//ABS
 core.regA = 0x2F;
 core.tick();
 core.tick();
 core.tick();
 core.tick();
-console.log("OUT", "is: ", core.regA, "should: ", 0x2F & 0x3C);
+console.log("OUT", "is: ", core.regA, "should: ", 0x2F & 0xBB);
 
-//ABS_X
-core.regX = 4;
-core.regA = 0x2C;
-core.tick();
-core.tick();
-core.tick();
-core.tick();
-console.log("OUT", "is: ", core.regA, "should: ", 0x2C & 0xA1);
+// //ABS
+// core.regA = 0x2F;
+// core.tick();
+// core.tick();
+// core.tick();
+// core.tick();
+// console.log("OUT", "is: ", core.regA, "should: ", 0x2F & 0x3C);
 
-//ABS_Y
-core.regY = 5;
-core.regA = 0x32;
-core.tick();
-core.tick();
-core.tick();
-core.tick();
-console.log("OUT", "is: ", core.regA, "should: ", 0x32 & 0xF1);
+// //ABS_X
+// core.regX = 4;
+// core.regA = 0x2C;
+// core.tick();
+// core.tick();
+// core.tick();
+// core.tick();
+// console.log("OUT", "is: ", core.regA, "should: ", 0x2C & 0xA1);
 
-//X_IND
-core.regX = 5;
-core.regA = 0xC6;
-core.tick();
-core.tick();
-core.tick();
-core.tick();
-core.tick();
-core
-.tick();
-console.log("OUT", "is: ", core.regA, "should: ", 0xC6 & 0x25);
+// //ABS_Y
+// core.regY = 5;
+// core.regA = 0x32;
+// core.tick();
+// core.tick();
+// core.tick();
+// core.tick();
+// console.log("OUT", "is: ", core.regA, "should: ", 0x32 & 0xF1);
+
+// //X_IND
+// core.regX = 5;
+// core.regA = 0xC6;
+// core.tick();
+// core.tick();
+// core.tick();
+// core.tick();
+// core.tick();
+// core
+// .tick();
+// console.log("OUT", "is: ", core.regA, "should: ", 0xC6 & 0x25);
 
 
 
