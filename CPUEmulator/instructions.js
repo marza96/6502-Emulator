@@ -1,4 +1,4 @@
-const { IntConstants } = require("./cpu_constatns");
+const { IntConstants, SRMasks} = require("./cpu_constatns");
 
 class Helpers{
     relBranchOffset(offset){
@@ -11,20 +11,41 @@ class Helpers{
 class Instructions{
     static _ADC(cpuInstance, address){
         var operand = cpuInstance.getData(address);
-        var carry = cpuInstance.regSR & 0x01;
-        cpuInstance.regA = operand ^ cpuInstance.regA ^ carry;
-        cpuInstance.carry = cpuInstance.regA & 0x01;
+        var carry = cpuInstance.regSR & SRMasks._CARRY;
+        var res = operand ^ cpuInstance.regA ^ carry;
+        //TODO IMPLEMENT TO END
     }
     
     static _AND(cpuInstance, address){
-        console.log("AND", address)
         var operand = cpuInstance.getData(address);
         cpuInstance.regA = operand & cpuInstance.regA;
+        cpuInstance.updateSR(
+            [
+                SRMasks._ZERO,
+                SRMasks._NEG
+            ],
+            [
+                cpuInstance.regA      == 0,
+                cpuInstance.regA >> 7 == 0x01
+            ]
+        );
     }
     
     static _ASL(cpuInstance, address){
         var operand = cpuInstance.getData(address);
-        cpuInstance.regA = operand & cpuInstance.regA;
+        cpuInstance.regA = operand << 0x01; 
+        cpuInstance.updateSR(
+            [
+                SRMasks._ZERO,
+                SRMasks._NEG,
+                SRMasks._CARRY
+            ],
+            [
+                cpuInstance.regA      == 0,
+                cpuInstance.regA >> 7 == 0x01,
+                (operand >> 7)        == 0x01
+            ]
+        );
     }
 
     static _BCC(cpuInstance, address){

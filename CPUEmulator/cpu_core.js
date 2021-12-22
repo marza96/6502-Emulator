@@ -1,7 +1,7 @@
 #!/root/.nvm/versions/node/v8.0.0/bin/node
 
 var {InstructionDecoder} = require("/home/node/SNESEmulator/CPUEmulator/instruction_decoder.js");
-var {MemMapConstants} = require("/home/node/SNESEmulator/CPUEmulator/cpu_constatns.js");
+var {MemMapConstants, IntConstants, SRMasks} = require("/home/node/SNESEmulator/CPUEmulator/cpu_constatns.js");
 var {RAM} = require("/home/node/SNESEmulator/RAMEmulator/ram.js");
 
 
@@ -30,6 +30,9 @@ class CpuCore{
     }
 
     getData(address){
+        if (address == -1)
+            return this.regA;
+        
         if (this.immMem != null){
             var data    = this.immMem;
             this.immMem = null;
@@ -76,7 +79,7 @@ class CpuCore{
     }
 
     isAllowed(intType){
-        // TODO CHECK IF CERTAIN INTS ON
+        // TODO CHECK INT FLAGS 
     }
 
     interrupt(intType){
@@ -92,7 +95,23 @@ class CpuCore{
         this.pushStack(this.regSP & 0x0F);
         this.pushStack(this.regSR);
         this.regSR &= 0xFB;
-        // TODO FETCH INTERRUPT VECTOR
+    }
+
+    updateSR(bits, vals){
+        var maskByte = 0x0;
+        var valsByte = 0x0;
+        var regSRCpy = this.regSR;
+
+        bits.forEach(bit => {
+            maskByte |= bit 
+        });
+        vals.forEach((flag ,index) => {
+            valsByte |= flag * bits[index]
+        });
+
+        regSRCpy &= 0xFF - maskByte;
+        regSRCpy |= valsByte;
+        this.regSR = regSRCpy;
     }
 
     tick(){ 

@@ -69,6 +69,21 @@ class IntConstants{
 
 
 /*
+    Status Register flags
+*/
+class SRMasks{
+    static get _NEG()   {return 0x80;} 
+    static get _OFW()   {return 0x40;}
+    static get _NO()    {return 0x20;}
+    static get _BRK()   {return 0x10;}
+    static get _DEC()   {return 0x08;}
+    static get _INT()   {return 0x04;}
+    static get _ZERO()  {return 0x02;}
+    static get _CARRY() {return 0x01;}
+}
+
+
+/*
     OpCode Map  
 */
 class OpcodeMap{
@@ -203,6 +218,6 @@ exports.MemConstants = MemConstants;
 exports.OpcodeMap = OpcodeMap;
 exports.IntConstants = IntConstants;
 exports.MemMapConstants = MemMapConstants;
-
+exports.SRMasks = SRMasks;
 
 

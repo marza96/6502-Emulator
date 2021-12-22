@@ -26,14 +26,13 @@ class InstructionDecoder{
     calcAddr(cpuInstance, address, mem_access){
         switch(mem_access){
             case MemConstants._ACC:
-                address = cpuInstance.regA;
+                address = -0x01;
                 break;
             case MemConstants._ABS:
                 address = address;
                 break;  
             case MemConstants._ABS_X:
                 address = address + cpuInstance.regX;
-
                 break;
             case MemConstants._ABS_Y:
                 address = address + cpuInstance.regY;
@@ -107,11 +106,8 @@ class InstructionDecoder{
             opCode  = cpuInstance.RAMInstance.getData(regPC);
             opCode  = opCode.toString(16);
             opCode  = this.PREP + opCode.toUpperCase();
-            
-            console.log(opCode);
-            console.log(regPC)
-            retVals = OpcodeMap[opCode];
 
+            retVals = OpcodeMap[opCode];
             this.instrName = retVals[0];
             this.memAccess = retVals[1];
             this.bytes     = retVals[2]
