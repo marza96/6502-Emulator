@@ -26,7 +26,7 @@ class InstructionDecoder{
     calcAddr(cpuInstance, address, mem_access){
         switch(mem_access){
             case MemConstants._ACC:
-                address = -0x01;
+                address = null;
                 break;
             case MemConstants._ABS:
                 address = address;
@@ -122,7 +122,8 @@ class InstructionDecoder{
         var addr = this.fetchAddr(cpuInstance, this.bytes);
         this[this.instrName](cpuInstance, 
             addr, this.memAccess);
-        
+        cpuInstance.regA = 0xFF & cpuInstance.regA;
+
         var ret_bytes   = this.bytes;
         this.instrName  = undefined;
         this.memAccess  = undefined;

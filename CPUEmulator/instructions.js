@@ -4,16 +4,37 @@ class Helpers{
     relBranchOffset(offset){
         var offset = address;
         var sign = offset & (0x80) == 1 ? 1 : -1;
+
         return sign * (offset & 0x7F);
     }
 }
 
 class Instructions{
     static _ADC(cpuInstance, address){
+        var overflow = null;
+        var carry = null;
+        var res = null
         var operand = cpuInstance.getData(address);
-        var carry = cpuInstance.regSR & SRMasks._CARRY;
-        var res = operand ^ cpuInstance.regA ^ carry;
-        //TODO IMPLEMENT TO END
+
+        carry = cpuInstance.regSR & SRMasks._CARRY;
+        res = cpuInstance.regA + operand + carry;
+        overflow = (cpuInstance.regA ^ res) & (operand ^ res);
+        cpuInstance.regA = res;
+
+        cpuInstance.updateSR(
+            [
+                SRMasks._ZERO,
+                SRMasks._NEG,
+                SRMasks._CARRY,
+                SRMasks._OFW
+            ],
+            [
+                cpuInstance.regA        == 0,
+                cpuInstance.regA >> 7   == 0x01,
+                cpuInstance.regA > 0xFF == 0x01,
+                (overflow & 0x80) >> 7  == 0x01
+            ]
+        );
     }
     
     static _AND(cpuInstance, address){
@@ -33,6 +54,7 @@ class Instructions{
     
     static _ASL(cpuInstance, address){
         var operand = cpuInstance.getData(address);
+
         cpuInstance.regA = operand << 0x01; 
         cpuInstance.updateSR(
             [
@@ -76,6 +98,15 @@ class Instructions{
         var operand = cpuInstance.getData(address);
         cpuInstance.regSR &= 0x3F;
         cpuInstance.regSR |= 0xC0 & operand;
+
+        cpuInstance.updateSR(
+            [
+                SRMasks._ZERO,
+            ],
+            [
+                operand & cpuInstance.regA == 0,
+            ]
+        );
     }
 
     static _BMI(cpuInstance, address){

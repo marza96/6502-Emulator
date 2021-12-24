@@ -1,4 +1,4 @@
-#!/root/.nvm/versions/node/v8.0.0/bin/node
+#!/root/.nvm/versions/node/v12.0.0/bin/node
 
 var {InstructionDecoder} = require("/home/node/SNESEmulator/CPUEmulator/instruction_decoder.js");
 var {MemMapConstants, IntConstants, SRMasks} = require("/home/node/SNESEmulator/CPUEmulator/cpu_constatns.js");
@@ -30,7 +30,7 @@ class CpuCore{
     }
 
     getData(address){
-        if (address == -1)
+        if (address == null)
             return this.regA;
         
         if (this.immMem != null){
@@ -45,6 +45,23 @@ class CpuCore{
         
         this.zp = false
         return this.RAMInstance.getData(address);
+    }
+
+    updateSR(bits, vals){
+        var maskByte = 0x0;
+        var valsByte = 0x0;
+        var regSRCpy = this.regSR;
+
+        bits.forEach(bit => {
+            maskByte |= bit 
+        });
+        vals.forEach((flag ,index) => {
+            valsByte |= flag * bits[index]
+        });
+
+        regSRCpy &= 0xFF - maskByte;
+        regSRCpy |= valsByte;
+        this.regSR = regSRCpy;
     }
 
     saveState(){
@@ -97,23 +114,6 @@ class CpuCore{
         this.regSR &= 0xFB;
     }
 
-    updateSR(bits, vals){
-        var maskByte = 0x0;
-        var valsByte = 0x0;
-        var regSRCpy = this.regSR;
-
-        bits.forEach(bit => {
-            maskByte |= bit 
-        });
-        vals.forEach((flag ,index) => {
-            valsByte |= flag * bits[index]
-        });
-
-        regSRCpy &= 0xFF - maskByte;
-        regSRCpy |= valsByte;
-        this.regSR = regSRCpy;
-    }
-
     tick(){ 
         var bytes_step = null;
         bytes_step = this.instrDecoder.resolveInstr(this);
@@ -131,6 +131,7 @@ class CpuCore{
 
 
 programData = [
+    0x69, 0x7E,
     0x29, 0xA5, 
     0x25, 0x01, 
     0x35, 0x03, 
@@ -143,12 +144,18 @@ programData = [
 RAMInstance = new RAM(programData);
 core = new CpuCore(RAMInstance);
 
+//ADC IMM WITH OVERFLOW
+core.regA = 0x67;
+core.tick();
+core.tick();
+console.log(core.regSR.toString(16));
+
 //IMM
 core.regA = 0xF1;
 core.tick();
 core.tick();
 console.log("OUT", "is: ", core.regA, "should: ", 0xF1 & 0xA5);
-
+ 
 // ZP
 RAMInstance.setData(0x01, 0xAB)
 core.regA = 0xAF;
