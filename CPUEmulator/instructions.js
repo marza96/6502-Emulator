@@ -27,11 +27,10 @@ class Instructions{
     }
 
     static _RTI(cpuInstance, address){
-        cpuInstance.regSR = cpuInstance.popStack();
+        cpuInstance.regSR = cpuInstance.popStack() & 0xFF;
         cpuInstance.regPC = cpuInstance.popStack() & 0xFF;
         cpuInstance.regPC |= (cpuInstance.popStack() & 0xFF) << 8;
         cpuInstance.regPC -= 0x01;
-        cpuInstance.intActive = false;
     }
 
     static _SBC(cpuInstance, address){

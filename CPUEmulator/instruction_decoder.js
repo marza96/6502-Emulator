@@ -1,6 +1,6 @@
 #!/root/.nvm/versions/node/v8.0.0/bin/node
 
-var {MemConstants, OpcodeMap, IntConstants} = require("/home/node/SNESEmulator/CPUEmulator/cpu_constatns.js");
+var {MemConstants, OpcodeMap} = require("/home/node/SNESEmulator/CPUEmulator/cpu_constatns.js");
 var {Instructions} = require("/home/node/SNESEmulator/CPUEmulator/instructions.js");
 
 class InstructionDecoder{
@@ -82,10 +82,18 @@ class InstructionDecoder{
         };
     }
 
+    setState(state){
+        this.instrName = state[0];
+        this.memAccess = state[1];
+        this.bytes     = state[2]
+        this.cycles    = state[3];  
+        this.currCycle = state[4];
+    }
+
     fetchAddr(cpuInstance, bytes){
-        var addr  = 0x00;
-        var offset  = 1;
-        var regPC = cpuInstance.regPC;
+        var addr   = 0x00;
+        var offset = 0x01;
+        var regPC  = cpuInstance.regPC;
         
         for (var i = 0x01; i < bytes; i++){
             var byte = cpuInstance.RAMInstance.getData(regPC + i);
@@ -96,23 +104,19 @@ class InstructionDecoder{
         return addr;
     }
 
-    resolveInstr(cpuInstance){
+    resolveInstr(cpuInst){
         if (this.cycles == null){
             var opCode  = null;
             var regPC   = null;
             var retVals = null;
 
-            regPC   = cpuInstance.regPC;
-            opCode  = cpuInstance.RAMInstance.getData(regPC);
-            opCode  = opCode.toString(16);
-            opCode  = this.PREP + opCode.toUpperCase();
+            regPC  = cpuInst.regPC;
+            opCode = cpuInst.RAMInstance.getData(regPC);
+            opCode = opCode.toString(16);
+            opCode = this.PREP + opCode.toUpperCase();
             
             retVals = OpcodeMap[opCode];
-            this.instrName = retVals[0];
-            this.memAccess = retVals[1];
-            this.bytes     = retVals[2]
-            this.cycles    = retVals[3];  
-            this.currCycle = 0;
+            this.setState(retVals.concat([0]));
         }
         
         if (this.currCycle < this.cycles - 1){
@@ -121,18 +125,18 @@ class InstructionDecoder{
             return [0x00, this.currCycle];
         }
 
-        var addr = this.fetchAddr(cpuInstance, this.bytes);
-        this[this.instrName](cpuInstance, 
-            addr, this.memAccess);
-        cpuInstance.regA = 0xFF & cpuInstance.regA;
+        var addr = this.fetchAddr(cpuInst, this.bytes);
+        this[this.instrName](cpuInst, addr, this.memAccess);
+        cpuInst.regA = 0xFF & cpuInst.regA;
 
-        var retBytes   = this.bytes;
+        var retBytes    = this.bytes;
         var retCurrCyle = this.currCycle + 1;
-        this.instrName  = null;
-        this.memAccess  = null;
-        this.bytes      = null;
-        this.cycles     = null;
-        this.currCycle = null;
+        this.setState(
+            [
+                null, null,
+                null, null, 
+                null
+            ]);
         
         return [retBytes, retCurrCyle];
     }

@@ -10,14 +10,13 @@ class CpuCore{
         this.regX  = 0x00;
         this.regY  = 0x00;
         this.regA  = 0x00;
-        this.regPC = MemMapConstants._ROM[0];
         this.regSR = 0x00;
-        this.regSP = 0x01FF;
+        this.regPC = MemMapConstants._ROM[0];
+        this.regSP = MemMapConstants._STACK[1];
 
         this.instrDecoder = new InstructionDecoder();
         this.RAMInstance  = RAMInstance;
         
-        this.intActive = false;
         this.zp        = false;
         this.immMem    = null;
         this.interrupt = null;
@@ -61,17 +60,12 @@ class CpuCore{
     }
 
     pushStack(byte){
-        // console.assert(this.regSP >= 0x0101);
         this.RAMInstance.setData(this.regSP, byte);
-
-        this.regSP++;
+        this.regSP--;
     }
 
     popStack(){
-        // console.assert(this.regSP < 0xFE);
-        var byte = this.RAMInstance.getData(--this.regSP);
-
-        // this.regSP--;
+        var byte = this.RAMInstance.getData(++this.regSP);
         return byte;
     }
 
@@ -86,15 +80,14 @@ class CpuCore{
     }
 
     interruptInit(){
-        var intVector = IntVectors[this.interrupt];
+        var intVec = IntVectors[this.interrupt];
 
         this.pushStack((this.regPC & 0xFF00) >> 8);
         this.pushStack(this.regPC & 0x00FF);
         this.pushStack(this.regSR);
         this.regSR |= SRMasks._INT;
-        this.regPC = (this.RAMInstance.getData(intVector[0]) & 0xFF) << 8;
-        this.regPC |= this.RAMInstance.getData(intVector[1]) & 0xFF;
-        this.intActive = true;
+        this.regPC = (this.RAMInstance.getData(intVec[0]) & 0xFF) << 8;
+        this.regPC |= this.RAMInstance.getData(intVec[1]) & 0xFF;
         this.interrupt = null;
     }
 
@@ -141,7 +134,7 @@ RAMInstance.setData(0xFFFB, 0x15);
 core.regA = 0x2;
 core.tick(IntConstants._INT_NMI);
 core.tick();
-console.log("SP TEST", core.regSR.toString(16))
+console.log("SP TEST: ", core.regSR.toString(16))
 
 core.tick();
 core.tick();
