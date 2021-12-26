@@ -1,7 +1,7 @@
 #!/root/.nvm/versions/node/v12.0.0/bin/node
 
 var {InstructionDecoder} = require("/home/node/SNESEmulator/CPUEmulator/instruction_decoder.js");
-var {MemMapConstants, IntConstants, SRMasks} = require("/home/node/SNESEmulator/CPUEmulator/cpu_constatns.js");
+var {MemMapConstants, IntConstants, IntVectors, SRMasks} = require("/home/node/SNESEmulator/CPUEmulator/cpu_constatns.js");
 var {RAM} = require("/home/node/SNESEmulator/RAMEmulator/ram.js");
 
 
@@ -14,16 +14,10 @@ class CpuCore{
         this.regSR = 0x00;
         this.regSP = 0x01FF;
 
-        this.temp_regX  = null;
-        this.temp_regY  = null;
-        this.temp_regA  = null;
-        this.temp_regSR = null;
-        this.temp_regPC = null;
-        this.temp_regSP = null;
-
         this.instrDecoder = new InstructionDecoder();
         this.RAMInstance  = RAMInstance;
         
+        this.intActive = false;
         this.zp        = false;
         this.immMem    = null;
         this.interrupt = null;
@@ -40,8 +34,9 @@ class CpuCore{
         }
         
         if (this.zp == false)
-            console.assert(
-                (address >= MemMapConstants._FREE[0]) && (address < MemMapConstants._FREE[1]));
+            var inRange = address >= MemMapConstants._FREE[0];
+            inRange = inRange & (address < MemMapConstants._FREE[1]);
+            // console.assert(inRange);
         
         this.zp = false
         return this.RAMInstance.getData(address);
@@ -64,68 +59,61 @@ class CpuCore{
         this.regSR = regSRCpy;
     }
 
-    saveState(){
-        this.temp_regX  = regX;
-        this.temp_regY  = regY; 
-        this.temp_regA  = regA; 
-        this.temp_regPC = regPC;
-        this.temp_regSR = regSR;
-        this.temp_regSP = regSP;
-    }
-
-    restoreState(){
-        regX  = this.temp_regX; 
-        regY  = this.temp_regY;  
-        regA  = this.temp_regA;  
-        regPC = this.temp_regPC;
-        regSR = this.temp_regSR;
-        regSP = this.temp_regSP;
-    }
-
     pushStack(byte){
-        console.assert(this.regSP >= 0x0101);
-        this.ram_instance.setData(this.regSP, byte);
+        // console.assert(this.regSP >= 0x0101);
+        this.RAMInstance.setData(this.regSP, byte);
+
         this.regSP++;
     }
 
     popStack(){
-        console.assert(this.regSP < 0xFE);
-        byte = this.ram_instance.getData(this.regSP);
-        this.regSP--;
+        // console.assert(this.regSP < 0xFE);
+        var byte = this.RAMInstance.getData(--this.regSP);
+
+        // this.regSP--;
         return byte;
     }
 
     isAllowed(intType){
-        // TODO CHECK INT FLAGS 
+        if (intType == null)
+            return false
+
+        if (intType == IntConstants._INT_IQR)
+            return !(this.regSR & SRMasks._INT >> 2);
+        
+        return true;
     }
 
-    interrupt(intType){
-        if (!this.isAllowed(intType))
-            return;
+    interruptInit(){
+        var intVector = IntVectors[this.interrupt];
 
-        this.interrupt = intType;
-    }
-
-    interruptPrep(){
-        this.saveState();
-        this.pushStack(this.regSP & 0xF0);
-        this.pushStack(this.regSP & 0x0F);
+        this.pushStack((this.regPC & 0xFF00) >> 8);
+        this.pushStack(this.regPC & 0x00FF);
         this.pushStack(this.regSR);
-        this.regSR &= 0xFB;
+        this.regSR |= SRMasks._INT;
+        this.regPC = (this.RAMInstance.getData(intVector[0]) & 0xFF) << 8;
+        this.regPC |= this.RAMInstance.getData(intVector[1]) & 0xFF;
+        this.intActive = true;
+        this.interrupt = null;
     }
 
-    tick(){ 
-        var bytes_step = null;
-        bytes_step = this.instrDecoder.resolveInstr(this);
+    tick(intType=null){ 
+        var byteStep = null;
+        var currCycle = null;
 
-        if (bytes_step == 0x00)
+        [byteStep, currCycle] = this.instrDecoder.resolveInstr(this);
+        if (this.isAllowed(intType)){
+            this.interrupt = intType;
+        }
+
+        if (byteStep == 0x00)
             return;
         
-        this.regPC += bytes_step;
+        this.regPC += byteStep;
         if (this.interrupt == null)
             return;
         
-        this.interruptPrep();
+        this.interruptInit();
     }
 }
 
@@ -139,19 +127,33 @@ programData = [
     0x3D, 0x12, 0x33, 
     0x39, 0x12, 0x33,
     0x21, 0x02,
-    0x31, 0x07
+    0x31, 0x07,
+    0xA9, 0xF1, //LDA FOR INTERRUPT TEST
+    0x40        //RTI FOR INTERRUPT TEST
 ];
 RAMInstance = new RAM(programData);
 core = new CpuCore(RAMInstance);
+RAMInstance.setData(0xFFFA, 0xE0);
+RAMInstance.setData(0xFFFB, 0x15);
 
 //ADC IMM WITH OVERFLOW
-core.regA = 0x67;
+core.regA = 0x2;
+core.tick(IntConstants._INT_NMI);
+core.tick();
+console.log("SP TEST", core.regSR.toString(16))
+
 core.tick();
 core.tick();
-console.log(core.regSR.toString(16));
+
+core.tick();
+core.tick();
+core.tick();
+core.tick();
+core.tick();
+core.tick();
 
 //IMM
-core.regA = 0xF1;
+// core.regA = 0xF1;
 core.tick();
 core.tick();
 console.log("OUT", "is: ", core.regA, "should: ", 0xF1 & 0xA5);

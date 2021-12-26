@@ -51,20 +51,22 @@ class MemMapConstants{
 /*
     CPU Interrupt constants wrapper
 */
-const INT_RES       = Symbol("Interrupt");
-const INT_NMI       = Symbol("Interrupt");
-const INT_BRK       = Symbol("Interrupt");
-const INT_IQR       = Symbol("Interrupt");
+class IntConstants{
+    static get _INT_RES() {return "_INT_RES";}
+    static get _INT_NMI() {return "_INT_NMI";}
+    static get _INT_BRK() {return "_INT_BRK";}
+    static get _INT_IQR() {return "_INT_IQR";}
+}
 
 
 /*
-    CPU Interrupt constants wrapper
+    Interrupt execution vectors
 */
-class IntConstants{
-    static get _INT_RES() {return INT_RES;}
-    static get _INT_NMI() {return INT_NMI;}
-    static get _INT_BRK() {return INT_BRK;}
-    static get _INT_IQR() {return INT_IQR;}
+class IntVectors{
+    static get _INT_RES() {return [0xFFFC, 0xFFFD];}
+    static get _INT_NMI() {return [0xFFFA, 0xFFFB];}
+    static get _INT_BRK() {return [0xFFFE, 0xFFFF];}
+    static get _INT_IQR() {return [0xFFFE, 0xFFFF];}
 }
 
 
@@ -118,7 +120,27 @@ class OpcodeMap{
     static get _xF0(){return ['_BEQ',   MemConstants._REL,      2,  2];}   
     
     static get _x24(){return ['_BIT',   MemConstants._ZP,       2,  3];} 
-    static get _x2C(){return ['_BIT',   MemConstants._ABS,      3,  4];}   
+    static get _x2C(){return ['_BIT',   MemConstants._ABS,      3,  4];} 
+    
+    static get _xA9(){return ['_LDA',   MemConstants._IMM,      2,	2];}  
+    static get _xA5(){return ['_LDA',   MemConstants._ZP,       2,	3];}   
+    static get _xB5(){return ['_LDA',   MemConstants._ZPX,      2,	4];}   
+    static get _xAD(){return ['_LDA',   MemConstants._ABS,      3,	4];}   
+    static get _xBD(){return ['_LDA',   MemConstants._ABS_X,    3,	4];}  
+    static get _xB9(){return ['_LDA',   MemConstants._ABS_Y,    3,	4];}   
+    static get _xA1(){return ['_LDA',   MemConstants._X_IND,    2,	6];}   
+    static get _xB1(){return ['_LDA',   MemConstants._IND_Y,    2,	5];} 
+
+    static get _xE9(){return ['_SBC',   MemConstants._IMM,      2,  2];}   
+    static get _xE5(){return ['_SBC',   MemConstants._ZP,       2,  3];}   
+    static get _xF5(){return ['_SBC',   MemConstants._ZPX,      2,  4];}   
+    static get _xED(){return ['_SBC',   MemConstants._ABS,      3,  4];}   
+    static get _xFD(){return ['_SBC',   MemConstants._ABS_X,    3,  4];}   
+    static get _xF9(){return ['_SBC',   MemConstants._ABS_Y,    3,  4];}   
+    static get _xE1(){return ['_SBC',   MemConstants._X_IND,    2,  6];}   
+    static get _xF1(){return ['_SBC',   MemConstants._IND_Y,    2,  5];} 
+
+    static get _x40(){return ['_RTI',   MemConstants._IMPL,     1,  6];}    
 
     static get _x30(){return ['_BMI',   MemConstants._REL,      2];}    
 
@@ -180,11 +202,11 @@ class OpcodeMap{
     static get _xEE(){return ['_INC',   MemConstants._ABS,      6];}
     static get _xFE(){return ['_INC',   MemConstants._ABS_X,    7];}
 
+
     static get _INX(){return ['_INX',   MemConstants._ACC];}    
     static get _INY(){return ['_INY',   MemConstants._ACC];}    
     static get _JMP(){return ['_JMP',   MemConstants._ACC];}    
-    static get _JSR(){return ['_JSR',   MemConstants._ACC];}    
-    static get _LDA(){return ['_LDA',   MemConstants._ACC];}    
+    static get _JSR(){return ['_JSR',   MemConstants._ACC];}  
     static get _LDX(){return ['_LDX',   MemConstants._ACC];}    
     static get _LDY(){return ['_LDY',   MemConstants._ACC];}    
     static get _LSR(){return ['_LSR',   MemConstants._ACC];}    
@@ -196,9 +218,10 @@ class OpcodeMap{
     static get _PLP(){return ['_PLP',   MemConstants._ACC];}    
     static get _ROL(){return ['_ROL',   MemConstants._ACC];}    
     static get _ROR(){return ['_ROR',   MemConstants._ACC];}    
-    static get _RTI(){return ['_RTI',   MemConstants._ACC];}    
     static get _RTS(){return ['_RTS',   MemConstants._ACC];}    
-    static get _SBC(){return ['_SBC',   MemConstants._ACC];}    
+
+     
+
     static get _SEC(){return ['_SEC',   MemConstants._ACC];}    
     static get _SED(){return ['_SED',   MemConstants._ACC];}    
     static get _SEI(){return ['_SEI',   MemConstants._ACC];}    
@@ -219,5 +242,6 @@ exports.OpcodeMap = OpcodeMap;
 exports.IntConstants = IntConstants;
 exports.MemMapConstants = MemMapConstants;
 exports.SRMasks = SRMasks;
+exports.IntVectors = IntVectors;
 
 

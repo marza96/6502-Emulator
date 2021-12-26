@@ -5,11 +5,11 @@ var {Instructions} = require("/home/node/SNESEmulator/CPUEmulator/instructions.j
 
 class InstructionDecoder{
     constructor(){
-        this.instrName = undefined;
-        this.memAccess = undefined;
-        this.bytes     = undefined;
-        this.cycles    = undefined;
-        this.curCycle  = undefined;
+        this.instrName = null;
+        this.memAccess = null;
+        this.bytes     = null;
+        this.cycles    = null;
+        this.curCycle  = null;
         this.PREP      = "_x";
 
         var instrs = Object.getOwnPropertyNames(Instructions);
@@ -97,16 +97,16 @@ class InstructionDecoder{
     }
 
     resolveInstr(cpuInstance){
-        if (this.cycles == undefined){
-            var opCode  = undefined;
-            var regPC   = undefined;
-            var retVals = undefined;
+        if (this.cycles == null){
+            var opCode  = null;
+            var regPC   = null;
+            var retVals = null;
 
             regPC   = cpuInstance.regPC;
             opCode  = cpuInstance.RAMInstance.getData(regPC);
             opCode  = opCode.toString(16);
             opCode  = this.PREP + opCode.toUpperCase();
-
+            
             retVals = OpcodeMap[opCode];
             this.instrName = retVals[0];
             this.memAccess = retVals[1];
@@ -114,9 +114,11 @@ class InstructionDecoder{
             this.cycles    = retVals[3];  
             this.currCycle = 0;
         }
+        
         if (this.currCycle < this.cycles - 1){
             this.currCycle++;
-            return 0x00;
+
+            return [0x00, this.currCycle];
         }
 
         var addr = this.fetchAddr(cpuInstance, this.bytes);
@@ -124,14 +126,15 @@ class InstructionDecoder{
             addr, this.memAccess);
         cpuInstance.regA = 0xFF & cpuInstance.regA;
 
-        var ret_bytes   = this.bytes;
-        this.instrName  = undefined;
-        this.memAccess  = undefined;
-        this.bytes      = undefined;
-        this.cycles     = undefined;
-        this.currCycle = undefined;
+        var retBytes   = this.bytes;
+        var retCurrCyle = this.currCycle + 1;
+        this.instrName  = null;
+        this.memAccess  = null;
+        this.bytes      = null;
+        this.cycles     = null;
+        this.currCycle = null;
         
-        return ret_bytes
+        return [retBytes, retCurrCyle];
     }
 }
 

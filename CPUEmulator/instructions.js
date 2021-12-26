@@ -1,4 +1,4 @@
-const { IntConstants, SRMasks} = require("./cpu_constatns");
+const { IntConstants, SRMasks, OpcodeMap} = require("./cpu_constatns");
 
 class Helpers{
     relBranchOffset(offset){
@@ -10,11 +10,44 @@ class Helpers{
 }
 
 class Instructions{
-    static _ADC(cpuInstance, address){
-        var overflow = null;
-        var carry = null;
-        var res = null
+    static _LDA(cpuInstance, address){
         var operand = cpuInstance.getData(address);
+
+        cpuInstance.regA = operand;
+        cpuInstance.updateSR(
+            [
+                SRMasks._ZERO,
+                SRMasks._NEG
+            ],
+            [
+                cpuInstance.regA      == 0x00,
+                cpuInstance.regA >> 7 == 0x01
+            ]
+        );
+    }
+
+    static _RTI(cpuInstance, address){
+        cpuInstance.regSR = cpuInstance.popStack();
+        cpuInstance.regPC = cpuInstance.popStack() & 0xFF;
+        cpuInstance.regPC |= (cpuInstance.popStack() & 0xFF) << 8;
+        cpuInstance.regPC -= 0x01;
+        cpuInstance.intActive = false;
+    }
+
+    static _SBC(cpuInstance, address){
+        var operand = ~cpuInstance.getData(address);
+
+        Instructions._ADC(
+            cpuInstance, 0x00, operand);
+    }
+
+    static _ADC(cpuInstance, address, operandOvrride=null){
+        var overflow = null;
+        var carry    = null;
+        var res      = null
+        var operand = cpuInstance.getData(address);
+        if (operandOvrride != null)
+            operand = operandOvrride;
 
         carry = cpuInstance.regSR & SRMasks._CARRY;
         res = cpuInstance.regA + operand + carry;
@@ -29,7 +62,7 @@ class Instructions{
                 SRMasks._OFW
             ],
             [
-                cpuInstance.regA        == 0,
+                cpuInstance.regA        == 0x00,
                 cpuInstance.regA >> 7   == 0x01,
                 cpuInstance.regA > 0xFF == 0x01,
                 (overflow & 0x80) >> 7  == 0x01
@@ -39,6 +72,7 @@ class Instructions{
     
     static _AND(cpuInstance, address){
         var operand = cpuInstance.getData(address);
+
         cpuInstance.regA = operand & cpuInstance.regA;
         cpuInstance.updateSR(
             [
@@ -46,7 +80,7 @@ class Instructions{
                 SRMasks._NEG
             ],
             [
-                cpuInstance.regA      == 0,
+                cpuInstance.regA      == 0x00,
                 cpuInstance.regA >> 7 == 0x01
             ]
         );
@@ -63,7 +97,7 @@ class Instructions{
                 SRMasks._CARRY
             ],
             [
-                cpuInstance.regA      == 0,
+                cpuInstance.regA      == 0x00,
                 cpuInstance.regA >> 7 == 0x01,
                 (operand >> 7)        == 0x01
             ]
