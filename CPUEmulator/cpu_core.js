@@ -33,10 +33,11 @@ class CpuCore{
             return data;
         }
         
-        if (this.zp == false)
+        if (this.zp == false){
             var inRange = address >= MemMapConstants._FREE[0];
             inRange = inRange & (address < MemMapConstants._FREE[1]);
-            // console.assert(inRange);
+            console.assert(inRange);
+        }
         
         this.zp = false
         return this.RAMInstance.getData(address);
