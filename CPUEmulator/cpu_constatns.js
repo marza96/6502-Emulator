@@ -142,34 +142,36 @@ class OpcodeMap{
 
     static get _x40(){return ['_RTI',   MemConstants._IMPL,     1,  6];}    
 
-    static get _x30(){return ['_BMI',   MemConstants._REL,      2];}    
+    static get _x30(){return ['_BMI',   MemConstants._REL,      2,  2];}    
 
-    static get _xD0(){return ['_BNE',   MemConstants._REL,      2];}    
+    static get _xD0(){return ['_BNE',   MemConstants._REL,      2,  2];}    
 
-    static get _x10(){return ['_BPL',   MemConstants._REL,      2];} 
+    static get _x10(){return ['_BPL',   MemConstants._REL,      2,  2];} 
 
-    static get _x00(){return ['_BRK',   MemConstants._IMPL,     7];}   
+    static get _x00(){return ['_BRK',   MemConstants._IMPL,     1,  7];}   
 
-    static get _x50(){return ['_BVC',   MemConstants._REL,      2];} 
+    static get _x50(){return ['_BVC',   MemConstants._REL,      2,  2];} 
 
-    static get _x70(){return ['_BVS',   MemConstants._REL,      2];}    
+    static get _x70(){return ['_BVS',   MemConstants._REL,      2,  2];} 
+    
+    static get _x60(){return ['_RTS',   MemConstants._IMPL,     1,  6];}    
 
-    static get _x18(){return ['_CLC',   MemConstants._IMPL,     2];} 
+    static get _x18(){return ['_CLC',   MemConstants._IMPL,     1,  2];} 
 
-    static get _xD8(){return ['_CLD',   MemConstants._ACC,      2];}   
+    static get _xD8(){return ['_CLD',   MemConstants._IMPL,     1,  2];}   
 
-    static get _x58(){return ['_CLI',   MemConstants._ACC,      2];}    
+    static get _x58(){return ['_CLI',   MemConstants._IMPL,     1,  2];}    
 
-    static get _xB8(){return ['_CLV',   MemConstants._ACC,      2];}  
+    static get _xB8(){return ['_CLV',   MemConstants._IMPL,     1,  2];}  
 
-    static get _xC9(){return ['_CMP',   MemConstants._IMM,      2];} 
-    static get _xC5(){return ['_CMP',   MemConstants._ZP,       3];} 
-    static get _xD5(){return ['_CMP',   MemConstants._ZPX,      4];} 
-    static get _xCD(){return ['_CMP',   MemConstants._ABS,      4];}   
-    static get _xDD(){return ['_CMP',   MemConstants._ABS_X,    4];} 
-    static get _xD9(){return ['_CMP',   MemConstants._ABS_Y,    4];} 
-    static get _xC1(){return ['_CMP',   MemConstants._X_IND,    6];}
-    static get _xD1(){return ['_CMP',   MemConstants._IND_Y,    5];} 
+    static get _xC9(){return ['_CMP',   MemConstants._IMM,      2,  2];} 
+    static get _xC5(){return ['_CMP',   MemConstants._ZP,       2,  3];} 
+    static get _xD5(){return ['_CMP',   MemConstants._ZPX,      2,  4];} 
+    static get _xCD(){return ['_CMP',   MemConstants._ABS,      3,  4];}   
+    static get _xDD(){return ['_CMP',   MemConstants._ABS_X,    3,  4];} 
+    static get _xD9(){return ['_CMP',   MemConstants._ABS_Y,    3,  4];} 
+    static get _xC1(){return ['_CMP',   MemConstants._X_IND,    2,  6];}
+    static get _xD1(){return ['_CMP',   MemConstants._IND_Y,    2,  5];} 
 
     static get _xE0(){return ['_CPX',   MemConstants._IMM,      2];}
     static get _xE4(){return ['_CPX',   MemConstants._ZP ,      3];}
@@ -218,10 +220,6 @@ class OpcodeMap{
     static get _PLP(){return ['_PLP',   MemConstants._ACC];}    
     static get _ROL(){return ['_ROL',   MemConstants._ACC];}    
     static get _ROR(){return ['_ROR',   MemConstants._ACC];}    
-    static get _RTS(){return ['_RTS',   MemConstants._ACC];}    
-
-     
-
     static get _SEC(){return ['_SEC',   MemConstants._ACC];}    
     static get _SED(){return ['_SED',   MemConstants._ACC];}    
     static get _SEI(){return ['_SEI',   MemConstants._ACC];}    

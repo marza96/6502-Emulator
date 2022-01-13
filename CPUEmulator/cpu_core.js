@@ -86,8 +86,8 @@ class CpuCore{
         this.pushStack(this.regPC & 0x00FF);
         this.pushStack(this.regSR);
         this.regSR |= SRMasks._INT;
-        this.regPC = (this.RAMInstance.getData(intVec[0]) & 0xFF) << 8;
-        this.regPC |= this.RAMInstance.getData(intVec[1]) & 0xFF;
+        this.regPC = (this.RAMInstance.getData(intVec[1]) & 0xFF) << 8;
+        this.regPC |= this.RAMInstance.getData(intVec[0]) & 0xFF;
         this.interrupt = null;
     }
 
@@ -122,13 +122,14 @@ programData = [
     0x39, 0x12, 0x33,
     0x21, 0x02,
     0x31, 0x07,
+    0x00, 0x00, // TWO BRKs
     0xA9, 0xF1, //LDA FOR INTERRUPT TEST
     0x40        //RTI FOR INTERRUPT TEST
 ];
 RAMInstance = new RAM(programData);
 core = new CpuCore(RAMInstance);
-RAMInstance.setData(0xFFFA, 0xE0);
-RAMInstance.setData(0xFFFB, 0x15);
+RAMInstance.setData(0xFFFA, 0x17);
+RAMInstance.setData(0xFFFB, 0xE0);
 
 //ADC IMM WITH OVERFLOW
 core.regA = 0x2;
